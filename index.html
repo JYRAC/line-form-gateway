@@ -72,27 +72,22 @@
   // 1. LIFF ID
   const MY_LIFF_ID = "2011755446-mVMZKRV7";
 
-  // 2. 各Googleフォームの事前入力設定
+  // 2. LINE ID事前入力を行う各Googleフォームの設定
   const FORM_CONFIG = {
-    // ④ その他アカウント・お問い合わせ用（設定完了）
+    // 個人アカウント発行フォーム
+    "issue": {
+      baseUrl: "https://docs.google.com/forms/d/e/1FAIpQLSd70J1TFVksfLC7tfqmp6SLlg3uoLxLaA-LZTLIB-m8Ia7PsQ/viewform",
+      entryKey: "entry.286004599"
+    },
+    // パスワードリセットフォーム
+    "reset": {
+      baseUrl: "https://docs.google.com/forms/d/e/1FAIpQLSf78T-g8dCBo8vfdY9-VoYVZ0e725TiSkw6uyx9ldahlajw-w/viewform",
+      entryKey: "entry.1887129797"
+    },
+    // その他アカウント・お問い合わせ用（デフォルト）
     "other": {
       baseUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdyMsSdWLRoM7FHX76V66ZjAPncvB3ZGJqkKwEudiOxv7gfIg/viewform",
       entryKey: "entry.1577358473"
-    },
-    // ① 個人アカウント発行フォーム（※実際のURL/entryに差し替えてください）
-    "issue": {
-      baseUrl: "https://docs.google.com/forms/d/e/YOUR_FORM_ID_ISSUE/viewform",
-      entryKey: "entry.111111111"
-    },
-    // ② 所属組織更新フォーム（※実際のURL/entryに差し替えてください）
-    "org": {
-      baseUrl: "https://docs.google.com/forms/d/e/YOUR_FORM_ID_ORG/viewform",
-      entryKey: "entry.222222222"
-    },
-    // ③ パスワードリセットフォーム（※実際のURL/entryに差し替えてください）
-    "reset": {
-      baseUrl: "https://docs.google.com/forms/d/e/YOUR_FORM_ID_RESET/viewform",
-      entryKey: "entry.333333333"
     }
   };
 
@@ -118,17 +113,21 @@
       .then((profile) => {
         const userId = profile.userId;
 
-        // URLパラメータから type を取得 (?type=other など)
-        const urlParams = new URLSearchParams(window.location.search);
-        const type = urlParams.get("type");
+        // URLパラメータから type を取得 (?type=issue など)
+        let urlParams = new URLSearchParams(window.location.search);
+        let type = urlParams.get("type");
 
-        // 該当するフォーム設定を取得（パラメータなし・不一致の場合は other をデフォルトに）
-        const config = FORM_CONFIG[type] || FORM_CONFIG["other"];
-
-        if (!config || !config.baseUrl) {
-          showError("転送先のフォームが設定されていません。");
-          return;
+        // LIFF内遷移で search が空になった場合のバックアップ取得
+        if (!type && liff.getContext()) {
+          const liffUrl = liff.getContext().liffUrl;
+          if (liffUrl && liffUrl.includes("?")) {
+            const query = liffUrl.split("?")[1];
+            type = new URLSearchParams(query).get("type");
+          }
         }
+
+        // 該当するフォーム設定を取得（指定なし・不一致の場合は other に倒す）
+        const config = FORM_CONFIG[type] || FORM_CONFIG["other"];
 
         // 事前入力URLの組み立て
         const redirectUrl = `${config.baseUrl}?usp=pp_url&${config.entryKey}=${encodeURIComponent(userId)}`;
