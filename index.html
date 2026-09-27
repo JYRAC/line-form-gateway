@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LINE認証中</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px 20px; color: #333; }
+    .spinner { margin: 20px auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #06C755; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <h3 id="status">LINE認証を行っています...</h3>
+  <p>自動的に申請フォームへ移動します。</p>
+
+  <script>
+    // ★ LIFF ID
+    const LIFF_ID = "2011755446-mVMZKRV7";
+
+    // ★ 各 Google フォームの「事前入力されたURL（DUMMY直前まで）」
+    const FORM_URLS = {
+      personal: "https://docs.google.com/forms/d/e/1FAIpQLSd70J1TFVksfLC7tfqmp6SLlg3uoLxLaA-LZTLIB-m8Ia7PsQ/viewform?usp=pp_url&entry.286004599=",
+      reset:    "https://docs.google.com/forms/d/e/1FAIpQLSf78T-g8dCBo8vfdY9-VoYVZ0e725TiSkw6uyx9ldahlajw-w/viewform?usp=pp_url&entry.1887129797=",
+      org:      "https://docs.google.com/forms/d/e/1FAIpQLSdyMsSdWLRoM7FHX76V66ZjAPncvB3ZGJqkKwEudiOxv7gfIg/viewform?usp=pp_url&entry.1577358473="
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const type = urlParams.get('type') || 'personal';
+      const baseUrl = FORM_URLS[type] || FORM_URLS.personal;
+
+      liff.init({ liffId: LIFF_ID })
+        .then(() => {
+          if (!liff.isLoggedIn()) {
+            liff.login();
+          } else {
+            liff.getProfile().then(profile => {
+              const lineUserId = profile.userId;
+              // LINE User ID を付与して Google フォームへ即時自動移動
+              window.location.href = baseUrl + encodeURIComponent(lineUserId);
+            }).catch(err => {
+              document.getElementById("status").innerText = "プロフィール取得エラーが発生しました";
+              console.error(err);
+            });
+          }
+        })
+        .catch(err => {
+          document.getElementById("status").innerText = "認証エラーが発生しました";
+          console.error("LIFF Init Error:", err);
+        });
+    });
+  </script>
+</body>
+</html>
