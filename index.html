@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>アカウント・組織申請フォーム</title>
+  <title>申請フォームへ転送中</title>
   <!-- LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -21,187 +21,80 @@
       padding: 16px;
       display: flex;
       justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
     .container {
       width: 100%;
-      max-width: 480px;
+      max-width: 400px;
       background: var(--card-bg);
       border-radius: 12px;
-      padding: 24px;
+      padding: 32px 24px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    h2 {
-      font-size: 1.25rem;
-      margin-top: 0;
-      margin-bottom: 16px;
-      color: #111;
       text-align: center;
     }
-    .user-profile {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #f8f9fa;
-      padding: 10px 14px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    .user-profile img {
-      width: 40px;
-      height: 40px;
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--primary-color);
       border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
     }
-    .user-profile .name {
-      font-size: 0.9rem;
-      font-weight: bold;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-    .form-group {
-      margin-bottom: 16px;
-    }
-    label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: #555;
-    }
-    input[type="text"], input[type="email"], select, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+    .status-text {
       font-size: 0.95rem;
-      box-sizing: border-box;
-      outline: none;
-      transition: border-color 0.2s;
+      color: #555;
+      margin: 0;
     }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--primary-color);
-    }
-    .btn-submit {
-      width: 100%;
-      background-color: var(--primary-color);
-      color: #fff;
-      border: none;
-      padding: 12px;
-      font-size: 1rem;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background-color 0.2s;
-    }
-    .btn-submit:hover {
-      background-color: #05b34c;
-    }
-    .loading {
-      text-align: center;
-      padding: 40px 0;
-      color: #777;
-    }
-    #status-message {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 6px;
-      display: none;
+    .error-text {
+      color: #c5221f;
       font-size: 0.85rem;
-      text-align: center;
+      margin-top: 12px;
+      display: none;
     }
-    .success { background-color: #e6f4ea; color: #137333; }
-    .error { background-color: #fce8e6; color: #c5221f; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div id="loading" class="loading">
-    LINEアカウント情報を読み込んでいます...
-  </div>
-
-  <div id="form-content" style="display: none;">
-    <h2>各種申請・手続き</h2>
-
-    <!-- LINEプロフ連携表示 -->
-    <div class="user-profile">
-      <img id="user-picture" src="https://via.placeholder.com/40" alt="Profile">
-      <div>
-        <div style="font-size: 0.75rem; color: #888;">連携中のLINEアカウント</div>
-        <div id="user-display-name" class="name">ユーザー名</div>
-      </div>
-    </div>
-
-    <!-- フォーム本体（Google Formsやカスタムエンドポイント連携用） -->
-    <form id="application-form">
-      <input type="hidden" id="lineUserId" name="lineUserId">
-
-      <div class="form-group">
-        <label for="applyType">申請種別</label>
-        <select id="applyType" name="applyType" required onchange="toggleFormFields()">
-          <option value="">選択してください</option>
-          <option value="personal">個人アカウント発行申請</option>
-          <option value="org">所属組織更新申請</option>
-          <option value="reset">パスワード再設定申請</option>
-          <option value="other">その他アカウント・お問い合わせ</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="lastName">姓（漢字）</label>
-        <input type="text" id="lastName" name="lastName" placeholder="山田" required>
-      </div>
-
-      <div class="form-group">
-        <label for="firstName">名（漢字）</label>
-        <input type="text" id="firstName" name="firstName" placeholder="太郎" required>
-      </div>
-
-      <!-- 個人アカウント用アルファベット入力 -->
-      <div id="field-en-name" style="display: none;">
-        <div class="form-group">
-          <label for="lastNameEn">姓（ローマ字）</label>
-          <input type="text" id="lastNameEn" name="lastNameEn" placeholder="yamada">
-        </div>
-        <div class="form-group">
-          <label for="firstNameEn">名（ローマ字）</label>
-          <input type="text" id="firstNameEn" name="firstNameEn" placeholder="taro">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="contactEmail">連絡先メールアドレス / アカウントメール</label>
-        <input type="email" id="contactEmail" name="contactEmail" placeholder="example@jyrac.stki.org" required>
-      </div>
-
-      <!-- 所属組織用 -->
-      <div id="field-org" style="display: none;">
-        <div class="form-group">
-          <label for="department">配属部署</label>
-          <input type="text" id="department" name="department" placeholder="例: 広報局">
-        </div>
-        <div class="form-group">
-          <label for="position">役職</label>
-          <input type="text" id="position" name="position" placeholder="例: 局長 / メンバー">
-        </div>
-      </div>
-
-      <!-- 自由記述（その他用） -->
-      <div id="field-other" style="display: none;">
-        <div class="form-group">
-          <label for="message">申請内容・お問い合わせ詳細</label>
-          <textarea id="message" name="message" rows="4" placeholder="詳細をご記入ください"></textarea>
-        </div>
-      </div>
-
-      <button type="submit" class="btn-submit">送信する</button>
-    </form>
-
-    <div id="status-message"></div>
-  </div>
+  <div class="spinner" id="spinner"></div>
+  <p id="status" class="status-text">LINE認証を確認しています...</p>
+  <p id="error-msg" class="error-text"></p>
 </div>
 
 <script>
-  // ★ LINE Developer Consoleで発行された LIFF ID を設定してください
-  const MY_LIFF_ID = "YOUR_LIFF_ID_HERE";
+  // 1. LIFF ID
+  const MY_LIFF_ID = "2011755446-mVMZKRV7";
+
+  // 2. 各Googleフォームの事前入力設定
+  const FORM_CONFIG = {
+    // ④ その他アカウント・お問い合わせ用（設定完了）
+    "other": {
+      baseUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdyMsSdWLRoM7FHX76V66ZjAPncvB3ZGJqkKwEudiOxv7gfIg/viewform",
+      entryKey: "entry.1577358473"
+    },
+    // ① 個人アカウント発行フォーム（※実際のURL/entryに差し替えてください）
+    "issue": {
+      baseUrl: "https://docs.google.com/forms/d/e/YOUR_FORM_ID_ISSUE/viewform",
+      entryKey: "entry.111111111"
+    },
+    // ② 所属組織更新フォーム（※実際のURL/entryに差し替えてください）
+    "org": {
+      baseUrl: "https://docs.google.com/forms/d/e/YOUR_FORM_ID_ORG/viewform",
+      entryKey: "entry.222222222"
+    },
+    // ③ パスワードリセットフォーム（※実際のURL/entryに差し替えてください）
+    "reset": {
+      baseUrl: "https://docs.google.com/forms/d/e/YOUR_FORM_ID_RESET/viewform",
+      entryKey: "entry.333333333"
+    }
+  };
 
   document.addEventListener("DOMContentLoaded", function() {
     liff.init({ liffId: MY_LIFF_ID })
@@ -209,54 +102,53 @@
         if (!liff.isLoggedIn()) {
           liff.login();
         } else {
-          getUserProfile();
+          processRedirect();
         }
       })
       .catch((err) => {
         console.error("LIFF Init Error: ", err);
-        // テスト用表示フォールバック
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("form-content").style.display = "block";
+        showError("LINE認証の初期化に失敗しました。");
       });
   });
 
-  function getUserProfile() {
+  function processRedirect() {
+    document.getElementById("status").textContent = "申請フォームへ転送しています...";
+
     liff.getProfile()
       .then((profile) => {
-        document.getElementById("lineUserId").value = profile.userId;
-        document.getElementById("user-display-name").textContent = profile.displayName;
-        if (profile.pictureUrl) {
-          document.getElementById("user-picture").src = profile.pictureUrl;
+        const userId = profile.userId;
+
+        // URLパラメータから type を取得 (?type=other など)
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get("type");
+
+        // 該当するフォーム設定を取得（パラメータなし・不一致の場合は other をデフォルトに）
+        const config = FORM_CONFIG[type] || FORM_CONFIG["other"];
+
+        if (!config || !config.baseUrl) {
+          showError("転送先のフォームが設定されていません。");
+          return;
         }
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("form-content").style.display = "block";
+
+        // 事前入力URLの組み立て
+        const redirectUrl = `${config.baseUrl}?usp=pp_url&${config.entryKey}=${encodeURIComponent(userId)}`;
+
+        // リダイレクト実行
+        window.location.href = redirectUrl;
       })
       .catch((err) => {
         console.error("Profile Error: ", err);
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("form-content").style.display = "block";
+        showError("LINEアカウント情報の取得に失敗しました。");
       });
   }
 
-  function toggleFormFields() {
-    const type = document.getElementById("applyType").value;
-    document.getElementById("field-en-name").style.display = (type === "personal") ? "block" : "none";
-    document.getElementById("field-org").style.display = (type === "org") ? "block" : "none";
-    document.getElementById("field-other").style.display = (type === "other") ? "block" : "none";
+  function showError(msg) {
+    document.getElementById("spinner").style.display = "none";
+    document.getElementById("status").style.display = "none";
+    const errEl = document.getElementById("error-msg");
+    errEl.textContent = msg;
+    errEl.style.display = "block";
   }
-
-  // 送信処理（必要に応じてGoogleフォームアクションまたはGAS WebAppエンドポイントに送信）
-  document.getElementById("application-form").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const statusMsg = document.getElementById("status-message");
-    statusMsg.className = "success";
-    statusMsg.textContent = "申請が完了しました。LINEメッセージをご確認ください。";
-    statusMsg.style.display = "block";
-
-    setTimeout(() => {
-      liff.closeWindow();
-    }, 2000);
-  });
 </script>
 
 </body>
